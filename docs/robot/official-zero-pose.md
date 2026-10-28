@@ -12,6 +12,9 @@ cargo run -p duck-control --example official-zero-pose -- --csv
 cargo run -p duck-control --example official-zero-pose -- --json
 ```
 
+> 先标“所有舵机 2048”的零点姿势：见 [`zero-pose.md`](zero-pose.md)。
+> 本文的表是 **HOME**（策略零点），不是舵机零点。
+
 ## 表
 
 | joint | ID | home (rad) | home (°) | home counts (2048=0) | rest (rad) | EEPROM homing |
