@@ -1347,10 +1347,45 @@ async fn open_bus_waiting(bus: &params::Bus, state: &RobotState) -> Option<BusIo
 /// and lies flat in a `beta`.
 fn body_imu_mount(board: robotd_params::board::Board) -> [f64; 4] {
     use duck_control::imu::SflpDecoder;
+    if let Some(mount) = imu_mount_override() {
+        return mount;
+    }
     match board {
         robotd_params::board::Board::Zero3 => SflpDecoder::DEFAULT_MOUNT,
         robotd_params::board::Board::Beta => SflpDecoder::BETA_MOUNT,
     }
+}
+
+/// `MICRODUCK_IMU_MOUNT=w,x,y,z` overrides the board's IMU mounting rotation.
+///
+/// The replica HAT is not a `zero3` or a `beta`; its IMU board can sit at its own angle even
+/// when it speaks the original's bus protocol. The quaternion is normalised here so a
+/// hand-written one need not be unit length, and a malformed value is reported once and
+/// ignored rather than silently changing which way is up.
+fn imu_mount_override() -> Option<[f64; 4]> {
+    let raw = std::env::var("MICRODUCK_IMU_MOUNT").ok()?;
+    let values: Vec<f64> = raw
+        .split(',')
+        .filter_map(|item| item.trim().parse().ok())
+        .collect();
+    if values.len() != 4 {
+        tracing::warn!(
+            got = values.len(),
+            "MICRODUCK_IMU_MOUNT needs 4 values (w,x,y,z); using the board's default"
+        );
+        return None;
+    }
+    let norm = values.iter().map(|v| v * v).sum::<f64>().sqrt();
+    if norm < 1e-9 {
+        tracing::warn!("MICRODUCK_IMU_MOUNT is not a rotation; using the board's default");
+        return None;
+    }
+    Some([
+        values[0] / norm,
+        values[1] / norm,
+        values[2] / norm,
+        values[3] / norm,
+    ])
 }
 
 #[cfg(target_os = "linux")]

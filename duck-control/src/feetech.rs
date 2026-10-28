@@ -18,7 +18,7 @@ use std::time::{Duration, Instant};
 
 use serialport::SerialPort;
 
-use crate::imu::{ImuData, SflpDecoder, IMU_BLOCK_LEN};
+use crate::imu::{IMU_BLOCK_LEN, ImuData, SflpDecoder};
 use crate::io::{ImuStale, IoError, JointTargets, Result, RobotIo, Sensors, SlowSensors};
 use crate::model::{IMU_DXL_ID, JOINT_IDS, NUM_JOINTS};
 
@@ -521,6 +521,13 @@ impl RobotIo for FeetechIo {
         let blocks = self.sync_read(&ids, REG_FEEDBACK, FEEDBACK_LEN)?;
         let mut sensors = Sensors::default();
         let first_joint = if self.imu_on_bus {
+            if blocks[0].len() < IMU_BLOCK_LEN {
+                return Err(IoError::ShortRead {
+                    what: "feetech imu block",
+                    expected: IMU_BLOCK_LEN,
+                    got: blocks[0].len(),
+                });
+            }
             let mut raw = [0u8; IMU_BLOCK_LEN];
             raw.copy_from_slice(&blocks[0][..IMU_BLOCK_LEN]);
             if self.last_imu_block == Some(raw) {

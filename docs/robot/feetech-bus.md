@@ -32,11 +32,25 @@ export MICRODUCK_FEETECH_OFFSETS="0,0,0.0873,0,0,0,0,0,0,0,0,0,0,0,0"
 
 ## IMU
 
-- 复刻 HAT 的 IMU 在 **I2C**（LSM6DSV16X / BMI088），本分支还没有 I2C 读取器，
-  默认给中性姿态（`quat = [1,0,0,0]`、重力 `[0,0,-1]`）。所以第一步只能
-  `[policy] enabled = false` 跑控制环、保持姿势；
-- 如果 IMU 板在舵机总线上（原版接线，Feetech ID 200、地址 56、12 字节块），
-  设 `MICRODUCK_IMU_ON_BUS=1`，解码器与 Dynamixel 后端完全一致。
+复刻的 IMU 板如果复刻了原版（`imu_to_dxl`，Feetech **ID 200**、地址 56、前 12 字节是
+陀螺 i16×3 + SFLP 四元数 half×3），就**不需要 I2C 读取器**，`SflpDecoder` 原样复用：
+
+```bash
+export MICRODUCK_IMU_ON_BUS=1     # 16 个 ID 一起 sync_read（200 在最前）
+```
+
+如果 IMU 在 I2C 上，本分支暂时给中性姿态（`quat=[1,0,0,0]`），只能先
+`[policy] enabled = false` 保持姿势。
+
+**安装角度**用四元数覆盖（必要时再归一化）：
+
+```bash
+# 默认 zero3 = +90° 绕 Y；复刻板如果和原版同角度，可以显式写死
+export MICRODUCK_IMU_MOUNT="0.7071068,0,0.7071068,0"
+```
+
+`[board] version` 选 `zero3` 还是 `beta` 只影响默认参数/挂载角，不确定时先用 `beta`
+（自定义板）再把 `MICRODUCK_IMU_MOUNT` 调到和原版一致。
 
 ## 先上板验证
 
