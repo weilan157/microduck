@@ -61,3 +61,7 @@ sha2 = "0.11.0"
 tar = "0.4.46"
 tempfile = "3.27.0"
 zstd = "0.13"
+
+[features]
+# 用 Feetech 总线替换 Dynamixel（A733 + 复刻 HAT）
+feetech = ["duck-control/feetech"]

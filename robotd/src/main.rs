@@ -1300,8 +1300,10 @@ impl Drop for WaitingVoice {
 }
 
 /// The real bus on the board; a fake elsewhere, so `open_bus_waiting` has one signature.
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", not(feature = "feetech")))]
 type BusIo = duck_control::bus::DynamixelIo;
+#[cfg(all(target_os = "linux", feature = "feetech"))]
+type BusIo = duck_control::feetech::FeetechIo;
 #[cfg(not(target_os = "linux"))]
 type BusIo = FakeIo;
 
@@ -1362,7 +1364,7 @@ fn open_bus(
     let loud = attempt == 0 || attempt.is_multiple_of(STARTUP_READ_LOG_EVERY);
     let port = bus.port.as_str();
 
-    let mut io = match duck_control::bus::DynamixelIo::open(port, bus.fast_sync_read) {
+    let mut io = match BusIo::open(port, bus.fast_sync_read) {
         Ok(io) => io,
         Err(e) => {
             if loud {

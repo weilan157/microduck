@@ -8,6 +8,8 @@
 //! designed in `docs/design/robotd-design.md` §2.
 
 pub mod bus;
+#[cfg(feature = "feetech")]
+pub mod feetech;
 pub mod fall;
 pub mod imu;
 pub mod io;
