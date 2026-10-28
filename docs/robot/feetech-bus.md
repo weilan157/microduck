@@ -13,6 +13,9 @@ cargo build -p robotd --features feetech
 
 ## 关节单位 / 方向 / 零点
 
+官方零点姿势（HOME_FRAME）的完整表在 [`official-zero-pose.md`](official-zero-pose.md)，
+上板标定时对着那张表摆姿势、读 `home counts`。
+
 **默认就是原版约定**，所以原版训练的策略看到的是同一组数字：
 
 - 位置：`rad = 2π·count/4096 − π`（2048 → 0 rad，与 XL330 相同）；
