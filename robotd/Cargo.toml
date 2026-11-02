@@ -63,5 +63,8 @@ tempfile = "3.27.0"
 zstd = "0.13"
 
 [features]
-# 用 Feetech 总线替换 Dynamixel（A733 + 复刻 HAT）
+# A733 + 复刻 HAT 是 Feetech HD-1910；这个分支默认就编 Feetech，
+# 避免 `cargo board --bins` 忘了带 --features feetech 时又变回 Dynamixel。
+# 要编回 Dynamixel：cargo build -p robotd --no-default-features
+default = ["feetech"]
 feetech = ["duck-control/feetech"]
